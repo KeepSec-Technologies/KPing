@@ -10,7 +10,7 @@ Debian-based OS: **sudo apt-get install -y expect**
 
 RHEL-based OS: **sudo yum install -y expect**
 
-Arch-based OS: **sudo pacman install -y expect**
+Arch-based OS: **sudo pacman -S expect**
 
 **2)** Being logged in as root or super-user
 
