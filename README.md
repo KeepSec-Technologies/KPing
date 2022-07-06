@@ -38,7 +38,7 @@ To make it executable:
 
 **3)** Answer the questions like the image below and you're good to go!
 
-
+![image](https://user-images.githubusercontent.com/99389721/177463843-ff5d4347-fbe3-4439-a87d-3f4fb79fedc1.png)
 
 
 **Warning: Do not change the path of the 'script.exp' file since the cronjob depends on it.**
