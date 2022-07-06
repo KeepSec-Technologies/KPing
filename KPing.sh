@@ -68,7 +68,24 @@ echo""
 
 fi
 
-function downloading {
+function installing {
+  tput civis
+  spinner="⣾⣽⣻⢿⡿⣟⣯⣷"
+  while :
+  do
+    for i in `seq 0 7`
+    do
+      printf "${PRPL}${spinner:$i:1}"
+      printf "\010${NC}"
+      sleep 0.2
+    done
+  done
+}
+
+installing &
+SPIN_PID=$!
+disown
+printf "${PRPL}\nInstalling Postfix and Mailx ➜ ${NC}"
 
 if [ -n "`command -v apt-get`" ]; then
 
@@ -117,27 +134,6 @@ fi
 sudo systemctl enable postfix &> /dev/null
 sudo systemctl start postfix > /dev/null
 sudo systemctl reload postfix > /dev/null
-
-}
-
-function installing {
-  tput civis
-  spinner="⣾⣽⣻⢿⡿⣟⣯⣷"
-  while :
-  do
-    for i in `seq 0 7`
-    do
-      printf "${PRPL}${spinner:$i:1}"
-      printf "\010${NC}"
-      sleep 0.2
-    done
-  done
-}
-
-installing &
-SPIN_PID=$!
-disown
-printf "${PRPL}\nInstalling Postfix and Mailx ➜ ${NC}"
 
 subject1="HOST DOWN: $pinged1"
 status1="$(ping -c 4 $pinged1 && curl $pinged1 2>&1)"
