@@ -114,7 +114,7 @@ then sudo yum remove -y postfix &> /dev/null && sudo yum install -y postfix > /d
 
 elif [ -n "`command -v pacman`" ];
 
-then sudo pacman -y postfix > /dev/null  && sudo pacman -y mailx > /dev/null; 
+then sudo pacman -S postfix > /dev/null  && sudo pacman -S mailx > /dev/null; 
 
 fi
 
