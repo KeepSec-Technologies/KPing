@@ -6,9 +6,6 @@ PRPL=$'\033[1;35m'
 GRN=$'\e[1;32m'
 BLUE=$'\e[3;49;34m'
 
-declare -rx BAR_SIZE="##########"
-declare -rx CLEAR_LINE="\\033[K"
-
 printf "${BLUE}\n"
 echo "██╗  ██╗██████╗ ██╗███╗   ██╗ ██████╗ "
 echo "██║ ██╔╝██╔══██╗██║████╗  ██║██╔════╝"
