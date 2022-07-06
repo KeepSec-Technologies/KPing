@@ -6,6 +6,9 @@ PRPL=$'\033[1;35m'
 GRN=$'\e[1;32m'
 BLUE=$'\e[3;49;34m'
 
+declare -rx BAR_SIZE="##########"
+declare -rx CLEAR_LINE="\\033[K"
+
 printf "${BLUE}\n"
 echo "██╗  ██╗██████╗ ██╗███╗   ██╗ ██████╗ "
 echo "██║ ██╔╝██╔══██╗██║████╗  ██║██╔════╝"
@@ -22,40 +25,40 @@ sleep 1
 echo""
 echo ""
 
-read -p "Do you want the script to also curl the hosts? (Y/N) " ynCURL
+read -p "Do you want the script to also ${YEL}curl${NC} the hosts? (Y/N) " ynCURL
 echo""
-read -p "How often in minutes do you want the cron job to run (${YEL}0${NC}-${YEL}60${NC}) : " cron
+read -p "How often in ${YEL}minutes${NC} do you want the cron job to run (0-60) : " cron
 echo""
-read -p "What is the email address that you want to receive your notifications : " to
+read -p "What is the ${YEL}email${NC} address that you want to receive your notifications : " to
 echo""
-read -p "What is the domain that will be used to send emails : " domain
+read -p "What is the ${YEL}domain${NC} that will be used to send emails : " domain
 echo""
 printf "${GRN}Assure yourself that the domain is pointing to the IP of your server${NC}\n"
 echo ""
 sleep 1
 
-read -p "What is the (1) IP or website you want to get notifications for : " pinged1
+read -p "What is the (${YEL}1${NC}) IP or website you want to get notifications for : " pinged1
 echo""
 read -p "Do you want a second ping? (Y/N) " yn1
 
 if [[ $yn1 == Y || $yn1 == y ]]; then 
 echo""
-read -p "What is the (2) IP or website you want to get notifications for : " pinged2
+read -p "What is the (${YEL}2${NC}) IP or website you want to get notifications for : " pinged2
 echo""
 read -p "Do you want a third ping? (Y/N) " yn2
 echo""
     if [[ $yn2 == Y || $yn2 == y ]]; then 
-    read -p "What is the (3) IP or website you want to get notifications for : " pinged3
+    read -p "What is the (${YEL}3${NC}) IP or website you want to get notifications for : " pinged3
     echo""
     read -p "Do you want a fourth ping? (Y/N) " yn3
     echo""
       if [[ $yn3 == Y || $yn3 == y ]]; then 
-        read -p "What is the (4) IP or website you want to get notifications for : " pinged4
+        read -p "What is the (${YEL}4${NC}) IP or website you want to get notifications for : " pinged4
         echo""
         read -p "Do you want a fifth ping? (Y/N) " yn4
         echo""
         if [[ $yn4 == Y || $yn4 == y ]]; then 
-        read -p "What is the (5) IP or website you want to get notifications for : " pinged5
+        read -p "What is the (${YEL}5${NC}) IP or website you want to get notifications for : " pinged5
         echo""
         fi
       fi
@@ -68,9 +71,7 @@ echo""
 
 fi
 
-sleep 0.5
-printf "${PRPL}➜ Installing Postfix and Mailx...${NC}"
-echo ""
+function downloading {
 
 if [ -n "`command -v apt-get`" ]; then
 
@@ -99,7 +100,7 @@ then sudo yum remove -y postfix &> /dev/null && sudo yum install -y postfix > /d
 
 elif [ -n "`command -v pacman`" ];
 
-then sudo pacman -y install postfix > /dev/null  && sudo pacman install -y mailx > /dev/null; 
+then sudo pacman -y postfix > /dev/null  && sudo pacman -y mailx > /dev/null; 
 
 fi
 
@@ -120,6 +121,26 @@ sudo systemctl enable postfix &> /dev/null
 sudo systemctl start postfix > /dev/null
 sudo systemctl reload postfix > /dev/null
 
+}
+
+function installing {
+  tput civis
+  spinner="⣾⣽⣻⢿⡿⣟⣯⣷"
+  while :
+  do
+    for i in `seq 0 7`
+    do
+      printf "${PRPL}${spinner:$i:1}"
+      printf "\010${NC}"
+      sleep 0.2
+    done
+  done
+}
+
+installing &
+SPIN_PID=$!
+disown
+printf "${PRPL}\nInstalling Postfix and Mailx ➜ ${NC}"
 
 subject1="HOST DOWN: $pinged1"
 status1="$(ping -c 4 $pinged1 && curl $pinged1 2>&1)"
@@ -243,8 +264,10 @@ cronjob="$cron * * * * $croncmd"
 
 ( crontab -l | grep -v -F "$croncmd" ; echo "$cronjob" ) | crontab -
 
+kill -9 $SPIN_PID &> /dev/null
+tput cnorm
 echo ""
-printf "${GRN}\nWe're done!${NC}"
+printf "${GRN}\n\nWe're done!${NC}"
 echo ""
 
 exit 0
