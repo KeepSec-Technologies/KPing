@@ -251,8 +251,9 @@ fi
 fi
 
 sudo chmod +x script.exp &> /dev/null
+$Path1=$(echo $PWD)
 
-croncmd="/usr/bin/expect $PWD/script.exp &> /dev/null"
+croncmd="/usr/bin/expect $Path1/script.exp &> /dev/null"
 cronjob="$cron * * * * $croncmd"
 
 ( crontab -l | grep -v -F "$croncmd" ; echo "$cronjob" ) | crontab -
