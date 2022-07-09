@@ -6,12 +6,14 @@
 
 **1)** Install 'expect' to be able to use the autoexpect command:
 
-Debian-based OS: **sudo apt-get install -y expect**
-
-RHEL-based OS: **sudo yum install -y expect**
-
-Arch-based OS: **sudo pacman -S expect**
-
+Debian-based OS: 
+```bash
+sudo apt-get install -y expect
+```
+RHEL-based OS: 
+```bash
+sudo yum install -y expect
+```
 **2)** Being logged in as root or super-user
 
 **3)** An internet domain pointing to your server, I recommend installing an SPF/DMARC record to pass through some email provider when sending your notifications.
@@ -23,17 +25,17 @@ That's it!
 **1)** Install the KPing.sh file and make it executable.
 
 To install it: 
-
-**wget https://raw.githubusercontent.com/KeepSec-Technologies/KPing/main/KPing.sh**
-
+```bash
+wget https://raw.githubusercontent.com/KeepSec-Technologies/KPing/main/KPing.sh
+```
 To make it executable:
-
-**sudo chmod +x KPing.sh**
-
+```bash
+sudo chmod +x KPing.sh
+```
 **2)** Then run: 
-
-**sudo autoexpect -quiet $PWD/KPing.sh** 
-
+```bash
+sudo autoexpect -quiet $PWD/KPing.sh
+```
 ***(Very important to use this exact command)***
 
 **3)** Answer the questions like the image below and you're good to go!
