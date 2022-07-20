@@ -24,7 +24,7 @@ echo ""
 
 read -p "Do you want the script to also ${YEL}curl${NC} the hosts? (Y/N) " ynCURL
 echo""
-read -p "How often in ${YEL}minutes${NC} do you want the cron job to run (0-60) : " cron
+read -p "How often in ${YEL}minutes${NC} do you want the cronjob to run (0-60) : " cron
 echo""
 read -p "What is the ${YEL}email${NC} address that you want to receive your notifications : " to
 echo""
@@ -254,7 +254,7 @@ sudo chmod +x script.exp &> /dev/null
 $Path1=$(echo $PWD)
 
 croncmd="/usr/bin/expect $Path1/script.exp &> /dev/null"
-cronjob="$cron * * * * $croncmd"
+cronjob="*/$cron * * * * $croncmd"
 
 ( crontab -l | grep -v -F "$croncmd" ; echo "$cronjob" ) | crontab -
 
