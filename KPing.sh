@@ -85,7 +85,7 @@ function installing {
 installing &
 SPIN_PID=$!
 disown
-printf "${PRPL}\nInstalling Postfix and Mailx ➜ ${NC}"
+printf "${PRPL}\nInstalling utilities ➜ ${NC}"
 
 if [ -n "`command -v apt-get`" ]; then
 
