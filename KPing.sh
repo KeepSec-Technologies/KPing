@@ -132,8 +132,8 @@ sudo sed -i -e "117d" /etc/postfix/main.cf &> /dev/null
 fi
 
 sudo systemctl enable postfix &> /dev/null
-sudo systemctl start postfix > /dev/null
-sudo systemctl reload postfix > /dev/null
+sudo systemctl start postfix &> /dev/null
+sudo systemctl reload postfix &> /dev/null
 
 subject1="HOST DOWN: $pinged1"
 status1="$(ping -c 4 $pinged1 && curl $pinged1 2>&1)"
