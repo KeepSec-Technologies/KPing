@@ -35,6 +35,7 @@ sudo ./KPing.sh
 
 
 The cronjob is in **/etc/cron.d/kping-[DOMAIN]-job** 
+
 The cronjob logs is in **/var/log/kping.log**
 
 If you want to uninstall it do:
