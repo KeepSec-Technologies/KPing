@@ -4,17 +4,7 @@
 
 ### ***Prerequisites:***
 
-**1)** Install 'expect' to be able to use the autoexpect command:
-
-Debian-based OS: 
-```bash
-sudo apt-get install -y expect
-```
-RHEL-based OS: 
-```bash
-sudo yum install -y expect
-```
-**2)** Being logged in as root or super-user
+**1)** Being logged in as root or super-user
 
 **3)** An internet domain pointing to your server, I recommend installing an SPF/DMARC record to pass through some email provider when sending your notifications.
 
@@ -34,21 +24,23 @@ sudo chmod +x KPing.sh
 ```
 **2)** Then run: 
 ```bash
-sudo autoexpect -quiet $PWD/KPing.sh
+sudo ./KPing.sh
 ```
-***(Very important to use this exact command)***
 
 **3)** Answer the questions like the image below and you're good to go!
 
-![image_2022-07-06_032646001](https://user-images.githubusercontent.com/108779415/177493882-589207f8-f5cb-485e-a27f-0531578b6c24.png)
+![image](https://user-images.githubusercontent.com/108779415/206007117-61dddb90-5d3a-40b1-9256-e550e0d03fad.png)
+
+*And we're done!*
 
 
+The cronjob is in **/etc/cron.d/kping-[DOMAIN]-job** 
+The cronjob logs is in **/var/log/kping.log**
 
-**Warning: Do not change the path of the 'script.exp' file since the cronjob depends on it.**
-
-If you messed up your input don't worry just rerun the script with autoexpect, it will overwrite everything.
+If you want to uninstall it do:
+```bash
+rm -f /etc/cron.d/kping-*
+rm -f $HOME/.script/kping-*
+```
 
 Feel free to modify the code if there's something that you want to change.
-
-
-
