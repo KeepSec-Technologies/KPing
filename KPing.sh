@@ -120,7 +120,7 @@ do
         subject=${dqt}HOST DOWN: $pingedloop${dqt}
         status=${dqt}\$(ping -c 4 $pingedloop && curl $pingedloop 2>&1)${dqt}
         status_text=\$(echo ${dqt}\${status}${dqt} | grep -o ${sqt}100% packet loss${sqt})
-        status_textCURL=\$(echo ${dqt}${status}${dqt} | grep -o ${sqt}100% packet loss\|Connection refused${sqt})
+        status_textCURL=\$(echo ${dqt}\${status}${dqt} | grep -o ${sqt}100% packet loss\|Connection refused${sqt})
         if [[ ${dqt}\${status_text}${dqt} == ${dqt}100% packet loss${dqt} ]] || [[ ${dqt}\${status_textCURL}${dqt} == ${dqt}Connection refused${dqt} ]]; then
         printf ${dqt}The host ${sqt}$pingedloop${sqt} is currently down!\n\n Please check it out as soon as possible.${dqt} | mail -r ${dqt}notification${dqt} -s ${dqt}\$subject${dqt} ${dqt}$to${dqt}
         fi" > $HOME/.script/kping-$pingedloop-job.sh
