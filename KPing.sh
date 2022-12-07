@@ -25,21 +25,69 @@ if [ `id -u` -ne 0 ]; then
    fi
 sleep 1
 mkdir $HOME/.script &> /dev/null
-echo""
-echo""
+printf "\n"
 
-#variable for number of questions
+#variables for number of questions
 num=1
+
+#variables of quotes to output secondary scripts well
 sqt="'"
 dqt='"'
 
+#function to ask if you want to curl the hosts or not
+function askCurl { 
+  read -n 1 -p "Do you want the script to also ${YEL}curl${NC} the hosts? (Y/N) " ynCURL
+  case $ynCURL in
+    [yY] )
+    echo ""
+    ;;
+    [nN] )
+    echo ""
+    ;;
+    *)
+    printf "${RED}\nAnswer 'Y' or 'N', try again\n\n${NC}"
+    sleep 0.5
+    askCurl
+    ;;
+  esac
+  echo""
+}
+#function to ask frequence of checking the hosts (min 1 minute, max 60 minutes)
+function askFreq {
+  read -n 2 -p "How often in ${YEL}minutes${NC} do you want the cron job to run (1-60) : " cron
+  case $cron in
+    [1-60] )
+    echo ""
+    ;;
+    *)
+    printf "${RED}\nOnly numbers between 1 and 60, try again\n\n${NC}"
+    sleep 0.5
+    askFreq
+    ;;
+  esac
+}
+#function to ask for another monitor or not
+function askMonit {
+  read -n 1 -p "Do you want another ping (${YEL}${num}${NC})? (Y/N) " yn
+  case $yn in
+    [yY] )
+    printf "\n\n"
+    ;;
+    [nN] )
+    printf "\n\n"
+    return 1
+    ;;
+    *)
+    printf "${RED}\nAnswer 'Y' or 'N', try again\n\n${NC}"
+    sleep 0.5
+    askMonit
+    ;;
+  esac
+}
+
 #start of series of questions
-#ask if you want to curl the hosts or not
-read -p "Do you want the script to also ${YEL}curl${NC} the hosts? (Y/N) " ynCURL
-echo""
-#frequence of checking the hosts (min 1 minute, max 60 minutes)
-read -p "How often in ${YEL}minutes${NC} do you want the cron job to run (0-60) : " cron
-echo""
+askCurl
+askFreq
 #email address to receive the notifs
 read -p "What is the ${YEL}email${NC} address that you want to receive your notifications : " to
 echo""
@@ -49,29 +97,9 @@ echo""
 printf "${GRN}Assure yourself that the domain is pointing to the IP of your server${NC}\n"
 echo""
 sleep 1
-
-#ask for the first host to monitor
-read -p "What is the (${YEL}${num}${NC}) IP or website you want to get notifications for : " pinged
-num=$((num+1))
-echo -e "#!/bin/bash
-    subject=${dqt}HOST DOWN: $pinged${dqt}
-    status=${dqt}\$(ping -c 4 $pinged && curl $pinged 2>&1)${dqt}
-    status_text=\$(echo ${dqt}\${status}${dqt} | grep -o ${sqt}100% packet loss${sqt})
-    if [[ ${dqt}\${status_text}${dqt} == ${dqt}100% packet loss${dqt} ]]; then
-    printf ${dqt}The host ${sqt}$pinged${sqt} is currently down!\n\n Please check it out as soon as possible.${dqt} | mail -r ${dqt}notification${dqt} -s ${dqt}\$subject${dqt} ${dqt}$to${dqt}
-    fi" > $HOME/.script/kping-$pinged-job.sh
-croncmd="root /usr/bin/bash $HOME/.script/kping-$pinged-job.sh >> /var/log/kping.log"
-cronjob="*/$cron * * * * $croncmd"
-printf "$cronjob\n" > "/etc/cron.d/kping-$pinged-job"
-echo""
-#ask for another host or not
-read -p "Do you want another ping (${YEL}${num}${NC})? (Y/N) " yn1
-
 #loop for infinite questions to add as many hosts as you want
-if [[ $yn1 == Y || $yn1 == y ]]; then 
 while :
 do
-    echo""
     read -p "What is the (${YEL}${num}${NC}) IP or website you want to get notifications for : " pingedloop
     echo""
     #PING-ONLY--------------------------------------
@@ -86,9 +114,8 @@ do
         croncmd="root /usr/bin/bash $HOME/.script/kping-$pingedloop-job.sh >> /var/log/kping.log"
         cronjob="*/$cron * * * * $croncmd"
         printf "$cronjob\n" > "/etc/cron.d/kping-$pingedloop-job"
-    fi
     #CURL--------------------------------------------------------
-    if [[ $ynCURL == Y || $ynCURL == y ]]; then
+    elif [[ $ynCURL == Y || $ynCURL == y ]]; then
         echo -e "#!/bin/bash
         subject=${dqt}HOST DOWN: $pingedloop${dqt}
         status=${dqt}\$(ping -c 4 $pingedloop && curl $pingedloop 2>&1)${dqt}
@@ -102,18 +129,8 @@ do
         printf "$cronjob\n" > "/etc/cron.d/kping-$pingedloop-job"
     fi
     num=$((num+1))
-    read -p "Do you want another ping (${YEL}${num}${NC})? (Y/N) " yn2
-    if [[ $yn2 == N || $yn2 == n ]]; then 
-       break
-    fi
+    askMonit || break
 done
-fi 
-
-if [[ $yn1 == N || $yn1 == n ]]; then 
-
-echo""
-
-fi
 
 #function for the installing wheel
 function installing {
@@ -138,7 +155,6 @@ printf "${PRPL}\nInstalling utilities ➜ ${NC}"
 
 #checks package manager and then install all the necessary utilities with your right package manager + puts the right configuration in the config file for postfix for you
 if [ -n "`command -v apt-get`" ]; then
-
 sudo apt-get -y purge postfix &> /dev/null
 sudo echo "postfix postfix/mailname string $domain" | debconf-set-selections
 sudo echo "postfix postfix/protocols select  all" | debconf-set-selections
@@ -151,34 +167,25 @@ sudo echo "postfix postfix/procmail boolean false" | debconf-set-selections
 sudo echo "postfix postfix/relayhost string" | debconf-set-selections
 sudo echo "postfix postfix/chattr boolean false" | debconf-set-selections
 sudo echo "postfix postfix/destinations string $domain" | debconf-set-selections
-
 fi
 
 if [ -n "`command -v apt-get`" ];
-
 then sudo apt-get -y install postfix > /dev/null  && sudo apt-get -y install bsd-mailx > /dev/null; 
-
 elif [ -n "`command -v yum`" ]; 
-
 then sudo yum remove -y postfix &> /dev/null && sudo yum install -y postfix > /dev/null  && sudo yum install -y mailx > /dev/null; 
-
 elif [ -n "`command -v pacman`" ];
-
 then sudo pacman -S postfix > /dev/null  && sudo pacman -S mailx > /dev/null; 
-
 fi
 
 sudo adduser --disabled-password --gecos "" notification &> /dev/null
 
 if [ -n "`command -v yum`" ]; then
-
 sudo sed -i -e "s/inet_interfaces = localhost/inet_interfaces = all/g" /etc/postfix/main.cf &> /dev/null
 sudo sed -i -e "s/#mydomain =.*/mydomain = $domain/g" /etc/postfix/main.cf &> /dev/null 
 sudo sed -i -e "s/#myorigin = $mydomain/myorigin = $mydomain/g" /etc/postfix/main.cf &> /dev/null
 sudo sed -i -e "s/#mynetworks =.*/mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128/g" /etc/postfix/main.cf &> /dev/null
 sudo sed -i -e "s/mydestination =.*/mydestination = mail."'$mydomain'", "'$mydomain'"/g" /etc/postfix/main.cf &> /dev/null
 sudo sed -i -e "117d" /etc/postfix/main.cf &> /dev/null
-
 fi
 
 #enable postfix mail services
