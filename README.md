@@ -20,11 +20,11 @@ wget https://raw.githubusercontent.com/KeepSec-Technologies/KPing/main/KPing.sh
 ```
 To make it executable:
 ```bash
-sudo chmod +x KPing.sh
+chmod +x KPing.sh
 ```
 **2)** Then run: 
 ```bash
-sudo ./KPing.sh
+./KPing.sh
 ```
 
 **3)** Answer the questions like the image below and you're good to go!
@@ -36,12 +36,15 @@ sudo ./KPing.sh
 
 The cronjob is in **/etc/cron.d/kping-[DOMAIN]-job** 
 
-The cronjob logs is in **/var/log/kping.log**
+The cronjob logs is in **/etc/KPing/logs**
 
-If you want to uninstall it do:
+If you want to remove only the configurations re-run the script and it will ask you for this:
+![image](https://user-images.githubusercontent.com/108779415/206327775-385a3a49-bcd3-4c53-92f7-03426704578c.png)
+
+If you want to uninstall completely it do:
 ```bash
 rm -f /etc/cron.d/kping-*
-rm -f $HOME/.script/kping-*
+rm -fr /etc/KPing
 ```
 
 Feel free to modify the code if there's something that you want to change.
