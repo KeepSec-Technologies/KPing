@@ -24,8 +24,15 @@ if [ `id -u` -ne 0 ]; then
       exit
    fi
 sleep 1
-mkdir $HOME/.script &> /dev/null
 printf "\n"
+
+#make directories and variables for it
+mkdir /etc/KPing &> /dev/null
+mkdir /etc/KPing/logs &> /dev/null
+mkdir /etc/KPing/configs &> /dev/null
+dirConf="/etc/KPing/configs"
+dirLogs="/etc/KPing/logs"
+
 
 #variables for number of questions
 num=1
@@ -34,15 +41,53 @@ num=1
 sqt="'"
 dqt='"'
 
+#where configs are localted
+config=($dirConf/kping-*)
+
+#function to ask if you want to delete previous configs
+function delConf { 
+  read -n 1 -p "${YEL}Delete${NC} previous KPing configurations? (Y/N) " ynDEL
+  printf "\n\nThose configurations will be ${RED}deleted${NC}:\n\n"
+  ls -A1 $dirConf | awk -F 'kping-|-job' {'print $2'}
+  case $ynDEL in
+    [yY] )
+    printf "\n"
+    read -n 1 -p "${RED}Are you ${RED}sure?${NC} (Y/N) " ynDEL2
+    printf "\n"
+    ;;
+    [nN] )
+    printf "\n"
+    ;;
+    *)
+    printf "${RED}\n\nAnswer 'Y' or 'N', try again\n\n${NC}"
+    sleep 0.5
+    delConf
+    ;;
+  esac
+  case $ynDEL2 in
+    [yY] )
+    printf "\n"
+    ;;
+    [nN] )
+    printf "\n"
+    delConf
+    ;;
+    *)
+    printf "${RED}\nAnswer 'Y' or 'N', try again\n\n${NC}"
+    sleep 0.5
+    delConf
+    ;;
+    esac
+}
 #function to ask if you want to curl the hosts or not
 function askCurl { 
   read -n 1 -p "Do you want the script to also ${YEL}curl${NC} the hosts? (Y/N) " ynCURL
   case $ynCURL in
     [yY] )
-    echo ""
+    printf "\n\n"
     ;;
     [nN] )
-    echo ""
+    printf "\n\n"
     ;;
     *)
     printf "${RED}\nAnswer 'Y' or 'N', try again\n\n${NC}"
@@ -50,7 +95,25 @@ function askCurl {
     askCurl
     ;;
   esac
-  echo""
+}
+#function for curl confirmation
+function CURLconfirmation {
+if [[ $ynCURL == Y || $ynCURL == y ]]; then
+  read -n 1 -p "Curl alone? (Y/N) " CURLconfirm
+  case $CURLconfirm in
+    [yY] )
+    printf "\n\n"
+    ;;
+    [nN] )
+    printf "\n\n"
+    ;;
+    *)
+    printf "${RED}\nAnswer 'Y' or 'N', try again\n\n${NC}"
+    sleep 0.5
+    CURLconfirmation
+    ;;
+  esac
+  fi
 }
 #function to ask frequence of checking the hosts (min 1 minute, max 60 minutes)
 function askFreq {
@@ -85,8 +148,17 @@ function askMonit {
   esac
 }
 
+#check to see if configuration already present and run delConf function if it is
+if [ -f "${config[0]}" ]; then
+    delConf
+    if [[ $ynDEL2 == Y || $ynDEL2 == y ]]; then
+      rm -f /etc/cron.d/kping-*
+      rm -f $dirConf/kping-*
+    fi
+fi
 #start of series of questions
 askCurl
+CURLconfirmation
 askFreq
 #email address to receive the notifs
 read -p "What is the ${YEL}email${NC} address that you want to receive your notifications : " to
@@ -110,12 +182,12 @@ do
         status_text=\$(echo ${dqt}\${status}${dqt} | grep -o ${sqt}100% packet loss${sqt})
         if [[ ${dqt}\${status_text}${dqt} == ${dqt}100% packet loss${dqt} ]]; then
         printf ${dqt}The host ${sqt}$pingedloop${sqt} is currently down!\n\n Please check it out as soon as possible.${dqt} | mail -r ${dqt}notification${dqt} -s ${dqt}\$subject${dqt} ${dqt}$to${dqt}
-        fi" > $HOME/.script/kping-$pingedloop-job.sh
-        croncmd="root /usr/bin/bash $HOME/.script/kping-$pingedloop-job.sh >> /var/log/kping.log"
+        fi" > $dirConf/kping-$pingedloop-job.sh
+        croncmd="root /usr/bin/bash $dirConf/kping-$pingedloop-job.sh >> $dirLogs/kping-$pingedloop.log"
         cronjob="*/$cron * * * * $croncmd"
         printf "$cronjob\n" > "/etc/cron.d/kping-$pingedloop-job"
-    #CURL--------------------------------------------------------
-    elif [[ $ynCURL == Y || $ynCURL == y ]]; then
+    #CURL-WITH-PING--------------------------------------------------------
+    elif [[ $CURLconfirm == N || $CURLconfirm == n ]]; then
         echo -e "#!/bin/bash
         subject=${dqt}HOST DOWN: $pingedloop${dqt}
         status=${dqt}\$(ping -c 4 $pingedloop && curl $pingedloop 2>&1)${dqt}
@@ -123,11 +195,23 @@ do
         status_textCURL=\$(echo ${dqt}\${status}${dqt} | grep -o ${sqt}100% packet loss\|Connection refused${sqt})
         if [[ ${dqt}\${status_text}${dqt} == ${dqt}100% packet loss${dqt} ]] || [[ ${dqt}\${status_textCURL}${dqt} == ${dqt}Connection refused${dqt} ]]; then
         printf ${dqt}The host ${sqt}$pingedloop${sqt} is currently down!\n\n Please check it out as soon as possible.${dqt} | mail -r ${dqt}notification${dqt} -s ${dqt}\$subject${dqt} ${dqt}$to${dqt}
-        fi" > $HOME/.script/kping-$pingedloop-job.sh
-        croncmd="root /usr/bin/bash $HOME/.script/kping-$pingedloop-job.sh >> /var/log/kping.log"
+        fi" > $dirConf/kping-$pingedloop-job.sh
+        croncmd="root /usr/bin/bash $dirConf/kping-$pingedloop-job.sh >> $dirLogs/kping-$pingedloop.log"
         cronjob="*/$cron * * * * $croncmd"
         printf "$cronjob\n" > "/etc/cron.d/kping-$pingedloop-job"
-    fi
+     #CURL-ONLY-------------------------------------------------------
+      elif [[ $CURLconfirm == Y || $CURLconfirm == y ]]; then
+        echo -e "#!/bin/bash
+        subject=${dqt}HOST DOWN: $pingedloop${dqt}
+        status=${dqt}\$(curl $pingedloop 2>&1)${dqt}
+        status_textCURL=\$(echo ${dqt}\${status}${dqt} | grep -o ${sqt}100% packet loss\|Connection refused${sqt})
+        if [[ ${dqt}\${status_textCURL}${dqt} == ${dqt}Connection refused${dqt} ]]; then
+        printf ${dqt}The website ${sqt}$pingedloop${sqt} is currently down!\n\n Please check it out as soon as possible.${dqt} | mail -r ${dqt}notification${dqt} -s ${dqt}\$subject${dqt} ${dqt}$to${dqt}
+        fi" > $dirConf/kping-$pingedloop-job.sh
+        croncmd="root /usr/bin/bash $dirConf/kping-$pingedloop-job.sh >> $dirLogs/kping-$pingedloop.log"
+        cronjob="*/$cron * * * * $croncmd"
+        printf "$cronjob\n" > "/etc/cron.d/kping-$pingedloop-job"
+      fi
     num=$((num+1))
     askMonit || break
 done
