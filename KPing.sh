@@ -119,13 +119,14 @@ if [[ $ynCURL == Y || $ynCURL == y ]]; then
 function askFreq {
   read -n 2 -p "How often in ${YEL}minutes${NC} do you want the cron job to run (1-60) : " cron
   case $cron in
-    [1-60] )
-    echo ""
-    ;;
     *)
+    if [[ $cron -gt 0 && $cron -lt 61 ]]; then
+    printf "\n\n"
+    else
     printf "${RED}\nOnly numbers between 1 and 60, try again\n\n${NC}"
     sleep 0.5
     askFreq
+    fi
     ;;
   esac
 }
