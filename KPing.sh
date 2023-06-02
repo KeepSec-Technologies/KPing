@@ -240,7 +240,6 @@ printf "${PRPL}\nInstalling utilities ➜ ${NC}"
 
 #checks package manager and then install all the necessary utilities with your right package manager + puts the right configuration in the config file for postfix for you
 if [ -n "`command -v apt-get`" ]; then
-sudo apt-get -y purge postfix &> /dev/null
 sudo echo "postfix postfix/mailname string $domain" | debconf-set-selections
 sudo echo "postfix postfix/protocols select  all" | debconf-set-selections
 sudo echo "postfix postfix/mynetworks string  127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128" | debconf-set-selections
