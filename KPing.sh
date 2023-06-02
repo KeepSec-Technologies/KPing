@@ -253,12 +253,12 @@ sudo echo "postfix postfix/chattr boolean false" | debconf-set-selections
 sudo echo "postfix postfix/destinations string $domain" | debconf-set-selections
 fi
 
-if [ -n "`command -v apt-get`" ];
-then sudo apt-get -y install postfix > /dev/null  && sudo apt-get -y install bsd-mailx > /dev/null; 
-elif [ -n "`command -v yum`" ]; 
-then sudo yum remove -y postfix &> /dev/null && sudo yum install -y postfix > /dev/null  && sudo yum install -y mailx > /dev/null; 
-elif [ -n "`command -v pacman`" ];
-then sudo pacman -S postfix > /dev/null  && sudo pacman -S mailx > /dev/null; 
+if [ -n "$(command -v apt-get)" ]; then
+    sudo apt-get -y install postfix >/dev/null && sudo apt-get -y install bsd-mailx >/dev/null
+elif [ -n "$(command -v yum)" ]; then
+    sudo yum install -y postfix >/dev/null && sudo yum install -y mailx >/dev/null
+elif [ -n "$(command -v pacman)" ]; then
+    sudo pacman -S postfix >/dev/null && sudo pacman -S mailx >/dev/null
 fi
 
 sudo adduser --disabled-password --gecos "" notification &> /dev/null
