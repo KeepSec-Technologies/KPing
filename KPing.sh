@@ -238,8 +238,12 @@ SPIN_PID=$!
 disown
 printf "${PRPL}\nInstalling utilities ➜ ${NC}"
 
-#checks package manager and then install all the necessary utilities with your right package manager + puts the right configuration in the config file for postfix for you
+#add notification user
+sudo adduser --disabled-password --gecos "" notification &>/dev/null
+
+#checks package manager and then install postfix with your right package manager + puts the right configuration in the config file for you if you don't already have postfix installed
 if [ -n "$(command -v apt-get)" ] && [ -z "$(command -v postfix)" ]; then
+  sudo apt-get -y install postfix >/dev/null
   sudo echo "postfix postfix/mailname string $domain" | debconf-set-selections
   sudo echo "postfix postfix/protocols select  all" | debconf-set-selections
   sudo echo "postfix postfix/mynetworks string  127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128" | debconf-set-selections
@@ -251,22 +255,20 @@ if [ -n "$(command -v apt-get)" ] && [ -z "$(command -v postfix)" ]; then
   sudo echo "postfix postfix/relayhost string" | debconf-set-selections
   sudo echo "postfix postfix/chattr boolean false" | debconf-set-selections
   sudo echo "postfix postfix/destinations string $domain" | debconf-set-selections
-fi
-
-if [ -n "$(command -v apt-get)" ]; then
-  sudo apt-get -y install postfix >/dev/null && sudo apt-get -y install bsd-mailx >/dev/null
-elif [ -n "$(command -v yum)" ]; then
-  sudo yum install -y postfix >/dev/null && sudo yum install -y mailx >/dev/null
-fi
-
-sudo adduser --disabled-password --gecos "" notification &>/dev/null
-
-if [ -n "$(command -v yum)" ] && [ -z "$(command -v postfix)" ]; then
+else if [ -n "$(command -v yum)" ] && [ -z "$(command -v postfix)" ]; then
+  sudo yum install -y postfix >/dev/null
   sudo sed -i -e "s/inet_interfaces = localhost/inet_interfaces = all/g" /etc/postfix/main.cf &>/dev/null
   sudo sed -i -e "s/#mydomain =.*/mydomain = $domain/g" /etc/postfix/main.cf &>/dev/null
   sudo sed -i -e "s/#mynetworks =.*/mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128/g" /etc/postfix/main.cf &>/dev/null
   sudo sed -i -e "s/mydestination =.*/mydestination = mail."'$mydomain'", "'$mydomain'"/g" /etc/postfix/main.cf &>/dev/null
   sudo sed -i -e "117d" /etc/postfix/main.cf &>/dev/null
+fi
+
+#install mailx a CLI tool to send emails
+if [ -n "$(command -v apt-get)" ]; then
+  sudo apt-get -y install bsd-mailx >/dev/null
+elif [ -n "$(command -v yum)" ]; then
+  sudo yum install -y mailx >/dev/null
 fi
 
 #enable postfix mail services
