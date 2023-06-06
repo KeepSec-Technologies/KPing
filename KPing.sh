@@ -120,7 +120,7 @@ function askFreq {
   case $cron in
   *)
     if [[ $cron -gt 0 && $cron -lt 61 ]]; then
-      printf "\n\n"
+      printf "\n"
     else
       printf "${RED}\nOnly numbers between 1 and 60, try again\n\n${NC}"
       sleep 0.5
@@ -280,4 +280,4 @@ echo ""
 printf "${GRN}\n\nWe're done!${NC}"
 echo ""
 
-exit 0
+exit 1
